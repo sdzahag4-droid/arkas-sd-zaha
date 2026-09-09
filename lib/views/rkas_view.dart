@@ -105,7 +105,7 @@ class _RkasViewState extends State<RkasView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.between,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,,
             children: [
               const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
