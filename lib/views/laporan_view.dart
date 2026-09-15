@@ -14,104 +14,114 @@ class LaporanView extends StatefulWidget {
 class _LaporanViewState extends State<LaporanView> {
   bool _isLoading = false;
 
-  // Fungsi untuk generate dan preview PDF Laporan K7 / BKU
-  Future<void> _generatePdfReport(String jenisLaporan) async {
-    setState(() => _isLoading = true);
-    try {
-      // Ambil data BKU dari Google Sheets
-      List<dynamic> bkuData = await ApiService.getData('BKU');
+  // Fungsi untuk generate byte data PDF Laporan K7 / BKU
+  Future<Uint8List> _generatePdfBytes(String jenisLaporan) async {
+    // Ambil data BKU dari Google Sheets
+    List<dynamic> bkuData = await ApiService.getData('BKU');
 
-      final pdf = pw.Document();
+    final pdf = pw.Document();
 
-      pdf.addPage(
-        pw.MultiPage(
-          pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.all(32),
-          build: (pw.Context context) {
-            return [
-              // KOP LAPORAN
-              pw.Header(
-                level: 0,
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('PEMERINTAH KABUPATEN PROBOLINGGO', style: const pw.TextStyle(fontSize: 12)),
-                    pw.Text('DINAS PENDIDIKAN DAN KEBUDAYAAN', style: const pw.TextStyle(fontSize: 12)),
-                    pw.SizedBox(height: 4),
-                    pw.Text('SD ZAINUL HASAN GENGGONG', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                    pw.Divider(thickness: 2),
-                    pw.SizedBox(height: 8),
-                    pw.Center(
-                      child: pw.Text(
-                        'LAPORAN $jenisLaporan DANA BOS',
-                        style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-                      ),
-                    ),
-                    pw.SizedBox(height: 16),
-                  ],
-                ),
-              ),
-              // TABEL DATA TRANSAKSI
-              pw.Table.fromTextArray(
-                headers: ['No', 'Tanggal', 'No. Bukti', 'Uraian', 'Penerimaan', 'Pengeluaran'],
-                data: List.generate(bkuData.length, (index) {
-                  var item = bkuData[index];
-                  return [
-                    '${index + 1}',
-                    item['tanggal'].toString(),
-                    item['nomor_bukti'].toString(),
-                    item['uraian'].toString(),
-                    'Rp ${item['penerimaan']}',
-                    'Rp ${item['pengeluaran']}',
-                  ];
-                }),
-                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
-                cellStyle: const pw.TextStyle(fontSize: 9),
-                headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
-                rowDecoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey400, width: 0.5))),
-              ),
-              pw.SizedBox(height: 40),
-              // TANDA TANGAN
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        build: (pw.Context context) {
+          return [
+            // KOP LAPORAN
+            pw.Header(
+              level: 0,
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    children: [
-                      pw.Text('Mengetahui,\nKepala SD Zainul Hasan Genggong', textAlign: pw.TextAlign.center),
-                      pw.SizedBox(height: 50),
-                      pw.Text('( Kepala Sekolah )', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      pw.Text('NIP. ........................................'),
-                    ],
+                  pw.Text('PEMERINTAH KABUPATEN PROBOLINGGO', style: const pw.TextStyle(fontSize: 12)),
+                  pw.Text('DINAS PENDIDIKAN DAN KEBUDAYAAN', style: const pw.TextStyle(fontSize: 12)),
+                  pw.SizedBox(height: 4),
+                  pw.Text('SD ZAINUL HASAN GENGGONG', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                  pw.Divider(thickness: 2),
+                  pw.SizedBox(height: 8),
+                  pw.Center(
+                    child: pw.Text(
+                      'LAPORAN $jenisLaporan DANA BOS',
+                      style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+                    ),
                   ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    children: [
-                      pw.Text('Genggong, ............................ 2026\nBendahara BOS', textAlign: pw.TextAlign.center),
-                      pw.SizedBox(height: 50),
-                      pw.Text('( Bendahara Sekolah )', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      pw.Text('NIP. ........................................'),
-                    ],
-                  ),
+                  pw.SizedBox(height: 16),
                 ],
               ),
-            ];
-          },
-        ),
-      );
+            ),
+            // TABEL DATA TRANSAKSI
+            pw.Table.fromTextArray(
+              headers: ['No', 'Tanggal', 'No. Bukti', 'Uraian', 'Penerimaan', 'Pengeluaran'],
+              data: List.generate(bkuData.length, (index) {
+                var item = bkuData[index];
+                return [
+                  '${index + 1}',
+                  item['tanggal'].toString(),
+                  item['nomor_bukti'].toString(),
+                  item['uraian'].toString(),
+                  'Rp ${item['penerimaan']}',
+                  'Rp ${item['pengeluaran']}',
+                ];
+              }),
+              headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+              cellStyle: const pw.TextStyle(fontSize: 9),
+              headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
+              rowDecoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey400, width: 0.5))),
+            ),
+            pw.SizedBox(height: 40),
+            // TANDA TANGAN
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Text('Mengetahui,\nKepala SD Zainul Hasan Genggong', textAlign: pw.TextAlign.center),
+                    pw.SizedBox(height: 50),
+                    pw.Text('( Kepala Sekolah )', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.Text('NIP. ........................................'),
+                  ],
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    pw.Text('Genggong, ............................ 2026\nBendahara BOS', textAlign: pw.TextAlign.center),
+                    pw.SizedBox(height: 50),
+                    pw.Text('( Bendahara Sekolah )', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.Text('NIP. ........................................'),
+                  ],
+                ),
+              ],
+            ),
+          ];
+        },
+      ),
+    );
 
-      // Tampilkan jendela Print / Preview PDF bawaan Windows
-      await Printing.layoutPdf(
-        onLayout: (PdfPageFormat format) async => pdf.save(),
-        name: 'Laporan_$jenisLaporan.pdf',
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal membuat laporan: $e')),
-      );
-    } finally {
-      setState(() => _isLoading = false);
-    }
+    return pdf.save();
+  }
+
+  // Membuka Halaman Preview dengan tombol Download / Save PDF aktif
+  void _openPdfPreview(String jenisLaporan) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: Text('Preview Laporan $jenisLaporan'),
+            backgroundColor: const Color(0xFF1E3A8A),
+          ),
+          body: PdfPreview(
+            build: (format) => _generatePdfBytes(jenisLaporan),
+            canChangeOrientation: false,
+            canChangePageFormat: false,
+            allowSharing: false,
+            allowPrinting: true,
+            // Tombol download / save PDF otomatis tersedia di bilah atas
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -145,28 +155,28 @@ class _LaporanViewState extends State<LaporanView> {
                         'Laporan kronologis seluruh transaksi penerimaan dan pengeluaran.',
                         Icons.menu_book,
                         Colors.blue,
-                        () => _generatePdfReport('K7 (BUKU KAS UMUM)'),
+                        () => _openPdfPreview('K7 (BUKU KAS UMUM)'),
                       ),
                       _buildReportCard(
                         'Format K7a (Buku Pembantu Bank)',
                         'Laporan khusus transaksi melalui rekening bank sekolah.',
                         Icons.account_balance,
                         Colors.green,
-                        () => _generatePdfReport('K7a (PEMBANTU BANK)'),
+                        () => _openPdfPreview('K7a (PEMBANTU BANK)'),
                       ),
                       _buildReportCard(
                         'Format K7b (Buku Pembantu Pajak)',
                         'Rekapitulasi pungutan dan penyetoran pajak PPh / PPN.',
                         Icons.receipt_long,
                         Colors.orange,
-                        () => _generatePdfReport('K7b (PEMBANTU PAJAK)'),
+                        () => _openPdfPreview('K7b (PEMBANTU PAJAK)'),
                       ),
                       _buildReportCard(
                         'Rekapitulasi Penggunaan Dana',
                         'Ringkasan penggunaan dana BOS per komponen kegiatan.',
                         Icons.pie_chart,
                         Colors.purple,
-                        () => _generatePdfReport('REKAPITULASI DANA BOS'),
+                        () => _openPdfPreview('REKAPITULASI DANA BOS'),
                       ),
                     ],
                   ),
