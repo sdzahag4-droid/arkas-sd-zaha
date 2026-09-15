@@ -5,6 +5,7 @@ DefaultDirName={autopf}\ARKAS SD Zaha
 DefaultGroupName=ARKAS SD Zaha
 OutputDir=dist
 OutputBaseFilename=arkas-sd-zaha Setup 1.0.0
+SetupIconFile=assets\app_icon.ico
 Compression=lzma
 SolidCompression=yes
 PrivilegesRequired=lowest
