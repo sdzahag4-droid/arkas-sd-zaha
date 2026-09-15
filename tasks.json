@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Windows Installer (.exe)",
+      "type": "shell",
+      "command": "flutter build windows --release && \"C:\\Program Files (x86)\\Inno Setup 6\\iscc.exe\" installer.iss",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

@@ -38,11 +38,9 @@ class _LaporanViewState extends State<LaporanView> {
 
   // Fungsi untuk generate byte data PDF Laporan K7 / BKU
   Future<Uint8List> _generatePdfBytes(String jenisLaporan) async {
-    // Ambil data BKU dan data Sekolah secara bersamaan dari Google Sheets
     List<dynamic> bkuData = await ApiService.getData('BKU');
     List<dynamic> sekolahData = await ApiService.getData('Sekolah');
 
-    // Ambil nama kepala sekolah dan bendahara dari baris pertama sheet Sekolah
     String namaKepalaSekolah = 'Kepala Sekolah';
     String namaBendahara = 'Bendahara Sekolah';
     
@@ -52,7 +50,7 @@ class _LaporanViewState extends State<LaporanView> {
     }
 
     final pdf = pw.Document();
-    final String tanggalExport = _getExportDate(); // Tanggal real-time hari ini
+    final String tanggalExport = _getExportDate();
 
     pdf.addPage(
       pw.MultiPage(
@@ -102,7 +100,7 @@ class _LaporanViewState extends State<LaporanView> {
               rowDecoration: const pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey400, width: 0.5))),
             ),
             pw.SizedBox(height: 40),
-            // TANDA TANGAN (Menggunakan variabel tanggalExport secara dinamis)
+            // TANDA TANGAN
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
@@ -134,27 +132,34 @@ class _LaporanViewState extends State<LaporanView> {
     return pdf.save();
   }
 
-  // Membuka Halaman Preview dengan aman
-  void _openPdfPreview(String jenisLaporan) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: Text('Preview Laporan $jenisLaporan'),
-            backgroundColor: const Color(0xFF1E3A8A),
-          ),
-          body: PdfPreview(
-            build: (format) => _generatePdfBytes(jenisLaporan),
-            initialPageFormat: PdfPageFormat.a4,
-            canChangeOrientation: false,
-            canChangePageFormat: false,
-            allowSharing: false,
-            allowPrinting: true,
-          ),
-        ),
-      ),
-    );
+  // Menggunakan Printing.sharePdf agar langsung memproses file PDF dengan bersih
+  Future<void> _openPdfPreview(String jenisLaporan) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final pdfBytes = await _generatePdfBytes(jenisLaporan);
+      
+      setState(() {
+        _isLoading = false;
+      });
+
+      // Membuka/menyimpan file PDF via share/export dialog bawaan library printing
+      await Printing.sharePdf(
+        bytes: pdfBytes,
+        filename: 'Laporan_$jenisLaporan.pdf',
+      );
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal membuat laporan: $e')),
+        );
+      }
+    }
   }
 
   @override
